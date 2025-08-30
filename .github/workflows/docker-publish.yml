@@ -34,7 +34,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./src/RustRetail.APIGateway
-          file: Dockerfile
+          file: ./src/RustRetail.APIGateway/Dockerfile
           push: true
           tags: |
             ghcr.io/rustretail/rustretail.apigateway:latest
