@@ -33,8 +33,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./src/RustRetail.APIGateway/Dockerfile
+          context: ./src/RustRetail.APIGateway
+          file: Dockerfile
           push: true
           tags: |
             ghcr.io/rustretail/rustretail.apigateway:latest
