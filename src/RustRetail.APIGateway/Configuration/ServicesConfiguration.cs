@@ -1,12 +1,16 @@
-﻿namespace RustRetail.APIGateway.Configuration
+﻿using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+namespace RustRetail.APIGateway.Configuration
 {
     internal static class ServicesConfiguration
     {
         const string ReverseProxySectionName = "ReverseProxy";
         const string JwtSectionName = "Jwt";
-        const string JwtAuthoritySectionName = "Authority";
+        const string JwtIssuerSectionName = "Issuer";
         const string JwtAudienceSectionName = "Audience";
-        const string JwtAuthenticationScheme = "Bearer";
+        const string JwtSecretKeySectionName = "SecretKey";
+        const string JwtAuthenticationScheme = "Bearer"; 
 
         internal static IServiceCollection AddApplicationServices(
             this IServiceCollection services,
@@ -36,16 +40,18 @@
             services.AddAuthentication(JwtAuthenticationScheme)
                 .AddJwtBearer(JwtAuthenticationScheme, options =>
                 {
-                    // Identity Service base URL
-                    options.Authority = configuration.GetSection(JwtSectionName)[JwtAuthoritySectionName];
-                    // Only for development
-                    options.RequireHttpsMetadata = true;
-                    options.Audience = configuration.GetSection(JwtSectionName)[JwtAudienceSectionName];
-
-                    // Allow self-signed certificates for development purposes
-                    options.BackchannelHttpHandler = new HttpClientHandler
+                    options.MapInboundClaims = false;
+                    options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = configuration.GetSection(JwtSectionName)[JwtIssuerSectionName],
+                        ValidAudience = configuration.GetSection(JwtSectionName)[JwtAudienceSectionName],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetSection(JwtSectionName)[JwtSecretKeySectionName]!)),
+                        ClockSkew = TimeSpan.Zero,
+                        RoleClaimType = "roles"
                     };
                 });
 
